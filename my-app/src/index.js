@@ -2,36 +2,48 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-// pick up here https://reactjs.org/tutorial/tutorial.html#why-immutability-is-important
+// pick up here https://reactjs.org/tutorial/tutorial.html#declaring-a-winner
 // run from here: C:\Users\debor\source\repos\ReactIntro\my-app
 
-class Square extends React.Component {
-// no constructor is needed because this component is not keeping track of the game's state
-// note that a built-in component like button needs onClick as the name of the prop that represents the Click event
-// A custom component could have a different prop name
-// But by convention, it's typical in React to use "on[Event]" for props representing events
-// and "handle[Event]" for the methods that handle those events
-// Because Square does not maintain its own state, but receives it from Board via props, and informs Board when changes should be made via props
-// Square is a controlled component
+// class Square extends React.Component {
+// // no constructor is needed because this component is not keeping track of the game's state
+// // note that a built-in component like button needs onClick as the name of the prop that represents the Click event
+// // A custom component could have a different prop name
+// // But by convention, it's typical in React to use "on[Event]" for props representing events
+// // and "handle[Event]" for the methods that handle those events
+// // Because Square does not maintain its own state, but receives it from Board via props, and informs Board when changes should be made via props
+// // Square is a controlled component
 
-    render() {
-      return (
-        <button 
-          className="square" 
-          onClick={() =>  this.props.onClick() }
-        >
-          {this.props.value}
-        </button>
-      );
-    }
-  }
-  
+//     render() {
+//       return (
+//         <button 
+//           className="square" 
+//           onClick={() =>  this.props.onClick() }
+//         >
+//           {this.props.value}
+//         </button>
+//       );
+//     }
+//   }
+
+// Because Square does not maintain its own state and only has a render method, we can convert it to a function component:
+
+function Square(props){
+  return(
+    <button className="square" onClick={props.onClick}>
+      {props.value}
+    </button>
+  );
+}
+
   class Board extends React.Component {
     constructor(props){
       super(props);
       // we're filling each square with a null value to start
+      // we also start out with the first move to mark the square as 'X' by default
       this.state = {
         squares: Array(9).fill(null),
+        xIsNext: true,
       };
     }
 
@@ -40,17 +52,24 @@ class Square extends React.Component {
     handleClick(i) {
       // we're using slice with no args to populate a new array "const squares" with the entire this.state.squares array
       const squares = this.state.squares.slice();
+      // if xIsNext = true, then we return 'X' as what should be shown in the current square
+      squares[i] = this.state.xIsNext ? 'X' : 'O';
 
       // changing the current square to show 'X'
       squares[i] = 'X';
 
       // updating the state (can only do this with setState, of course, which is why we do the slice thing above - 
       //state is immutable other than when being changed via setState)
-      this.setState({squares: squares});
+      this.setState({
+        squares: squares,
+        // we flip this so we know if the next square should be X or O
+        xIsNext: !this.state.xIsNext,
+      });
     }
 
     renderSquare(i) {
-      const status = 'Next Player: X';
+      // here we show whether the next player is X or O
+      const status = 'Next Player: ' + (this.state.xIsNext ? 'X' : 'O');
       // Here we're passing down the current square value to the Square component and a function that Square can call when clicked; both as props
       // the parentheses are necessary after return so JS doesn't insert a ';' after return
       return (
