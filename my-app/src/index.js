@@ -51,10 +51,9 @@ function Square(props){
     }
   
     render() {
-      //determing if there's a winner and what to display "next player" or "winner" is now lifted up to the Game component instead of here  
+      //determining if there's a winner and what to display "next player" or "winner" is now lifted up to the Game component instead of here  
       return (
         <div>
-          <div className="status">{status}</div>
           <div className="board-row">
             {this.renderSquare(0)}
             {this.renderSquare(1)}
