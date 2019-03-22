@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-// pick up here https://reactjs.org/tutorial/tutorial.html#picking-a-key
+// https://reactjs.org/tutorial/tutorial.html
 // run from here: C:\Users\debor\source\repos\ReactIntro\my-app
 
 // class Square extends React.Component {
@@ -79,12 +79,14 @@ function Square(props){
   // We have removed the squares array from the Board, as well as xIsNext, and lifted it up to this top-level component
   class Game extends React.Component {
     // constructor to set up the initial state
+    // we have an array of squares, the step we're currently viewing, and whether "X" is the next player or not
     constructor(props){
       super(props);
       this.state = {
         history: [{
           squares: Array(9).fill(null),
         }],
+        stepNumber: 0,
         xIsNext: true,
       };
     }
@@ -92,9 +94,11 @@ function Square(props){
     // this is the method that handles the click event in the Square component.  It's accessible to the child Square component
     // because it's passed down as a prop.
     handleClick(i) {
-      const history = this.state.history;
+      // using slice here ensures that if we "go back in time" to a given step and then make a new move from that point, the original subsequent
+      // history is removed
+      const history = this.state.history.slice(0, this.state.stepNumber + 1);
       const current = history[history.length - 1];
-
+      
       // we're using slice with no args to populate a new array "const squares" with the entire current.squares array
       const squares = current.squares.slice();
 
@@ -112,17 +116,27 @@ function Square(props){
         // we add the current.squares to the history using concat because it doesnt mutate the original array
         history: history.concat([{
           squares: squares,
-        }]),        
+        }]),
+        // the current stepnumber is the history length
+        stepNumber: history.length,
         // we flip this so we know if the next square should be X or O
         xIsNext: !this.state.xIsNext,
+      });
+    }
+
+    // jumpto updates the stepnumber and sets xIsNext to true if the new step number is even (X is always on odd numbered moves)
+    jumpTo(step) {
+      this.setState({
+        stepNumber: step,
+        xIsNext: (step % 2) === 0,
       });
     }
 
     render() {
       // entire history
       const history = this.state.history;
-      // current state of the board
-      const current = history[history.length - 1];
+      // current state of the board as of the current step selected by the user/currently selected move
+      const current = history[this.state.stepNumber];
 
       // is there a winner? This was also lifted up from the child component Board
       const winner = calculateWinner(current.squares);
@@ -134,8 +148,9 @@ function Square(props){
         'Go to game start';
 
         // we return a list of buttons that when clicked jump to the appropriate move, and have the description text 'desc' as defined above
+        // note the use of move as a key
         return (
-          <li>
+          <li key={move}>
             <button onClick={() => this.jumpTo(move)}>{desc}</button>
           </li>
         );
